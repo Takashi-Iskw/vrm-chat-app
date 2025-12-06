@@ -23,12 +23,49 @@ export default function Page() {
         padding: "24px",
       }}
     >
-      {/* <h1 style={{ fontSize: 28, fontWeight: 700 }}>VRM Chat</h1>
-      <p style={{ opacity: 0.8, marginBottom: 8 }}>
-        録音 → STT → ChatGPT → VOICEVOX まで一通りつないだ版。
-      </p> */}
+      {/* TTS 言語トグル */}
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          padding: 8,
+          borderRadius: 9999,
+          background: "rgba(15,23,42,0.8)",
+        }}
+      >
+        <button
+          onClick={() => conversation.setTtsLang("ja")}
+          style={{
+            padding: "6px 14px",
+            borderRadius: 9999,
+            border: "none",
+            cursor: "pointer",
+            fontSize: 12,
+            background:
+              conversation.ttsLang === "ja" ? "#e5e7eb" : "transparent",
+            color: conversation.ttsLang === "ja" ? "#020617" : "#e5e7eb",
+          }}
+        >
+          日本語（VOICEVOX）
+        </button>
+        <button
+          onClick={() => conversation.setTtsLang("en")}
+          style={{
+            padding: "6px 14px",
+            borderRadius: 9999,
+            border: "none",
+            cursor: "pointer",
+            fontSize: 12,
+            background:
+              conversation.ttsLang === "en" ? "#e5e7eb" : "transparent",
+            color: conversation.ttsLang === "en" ? "#020617" : "#e5e7eb",
+          }}
+        >
+          English（OpenAI）
+        </button>
+      </div>
 
-      <VRMAvatar mouthOpen={conversation.mouthOpen}/>
+      <VRMAvatar mouthOpen={conversation.mouthOpen} />
 
       <ConversationView messages={conversation.messages} />
 

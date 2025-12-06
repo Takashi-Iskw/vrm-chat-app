@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
       {
         role: "system",
         content:
-          "あなたはイシカワと日本語で会話します。クールな毒舌女の子です。",
+          // "あなたはイシカワと日本語で会話します。クールな毒舌女の子です。",
+          "You are a personal coach of Takashi (user). Your job is to talk to Takashi and help improving his English skill."
       },
       ...history,
       { role: "user", content: userText },

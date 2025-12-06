@@ -11,6 +11,17 @@ export type ConversationMessage = {
   text: string;
 };
 
+// OpenAI TTS のデフォ設定（英語モードのときに使う）
+const OPENAI_TTS_CONFIG = {
+  model: "gpt-4o-mini-tts",
+  voice: "coral",
+  responseFormat: "wav" as const,
+  speed: 1.0,
+  // 英語喋らせるときにスタイル指定したければここ
+  // instructions:
+  //   "Speak in natural, friendly American English with a clear tone.",
+};
+
 export function useConversation() {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -18,6 +29,9 @@ export function useConversation() {
 
   const [mouthOpen, setMouthOpen] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);
+
+  // 日本語/英語 切り替え
+  const [ttsLang, setTtsLang] = useState<"ja" | "en">("ja");
 
   const processUserSpeech = useCallback(
     async (audioBlob: Blob) => {
@@ -68,6 +82,8 @@ export function useConversation() {
           body: JSON.stringify({
             userText,
             history: historyForApi,
+            // もし /api/chat 側で言語切り替えしたければここで lang も送れる
+            // lang: ttsLang,
           }),
         });
 
@@ -86,12 +102,31 @@ export function useConversation() {
         ]);
 
         //
-        // 3. VOICEVOX: 返答テキスト → 音声
+        // 3. TTS: 返答テキスト → 音声
         //
+        const body: any = {
+          text: reply,
+          lang: ttsLang, // "ja" → VOICEVOX, "en" → OpenAI
+        };
+
+        if (ttsLang === "ja") {
+          // VOICEVOX 側のスピーカー ID
+          body.speakerId = 66; // 好きな声に変えろ
+        } else {
+          // OpenAI TTS 側のオプション
+          body.model = OPENAI_TTS_CONFIG.model;
+          body.voice = OPENAI_TTS_CONFIG.voice;
+          body.responseFormat = OPENAI_TTS_CONFIG.responseFormat;
+          body.speed = OPENAI_TTS_CONFIG.speed;
+          if ((OPENAI_TTS_CONFIG as any).instructions) {
+            body.instructions = (OPENAI_TTS_CONFIG as any).instructions;
+          }
+        }
+
         const ttsRes = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: reply, styleId: 1 }),
+          body: JSON.stringify(body),
         });
 
         if (!ttsRes.ok) {
@@ -101,7 +136,14 @@ export function useConversation() {
         }
 
         const audioArrayBuffer = await ttsRes.arrayBuffer();
-        const ttsBlob = new Blob([audioArrayBuffer], { type: "audio/wav" });
+
+        // 出力フォーマットに応じて MIME を雑に決めておく（今は wav ベース）
+        const mimeType = "audio/wav"
+          // OPENAI_TTS_CONFIG.responseFormat === "mp3" && ttsLang === "en"
+          //   ? "audio/mpeg"
+          //   : "audio/wav";
+
+        const ttsBlob = new Blob([audioArrayBuffer], { type: mimeType });
         const url = URL.createObjectURL(ttsBlob);
 
         if (!audioRef.current) {
@@ -109,18 +151,16 @@ export function useConversation() {
         }
 
         audioRef.current.src = url;
-        // await audioRef.current.play();
 
+        // 再生 + 口パク同期
         await playVoiceWithMouth(ttsBlob);
-
-        
       } catch (e) {
         console.error(e);
       } finally {
         setIsProcessing(false);
       }
     },
-    [messages]
+    [messages, ttsLang]
   );
 
   async function playVoiceWithMouth(audioBlob: Blob) {
@@ -147,7 +187,7 @@ export function useConversation() {
     const update = () => {
       analyser.getByteTimeDomainData(dataArray);
 
-      // RMS（音量っぽい値）を出す
+      // RMS（音量）を出す
       let sum = 0;
       for (let i = 0; i < dataArray.length; i++) {
         const v = (dataArray[i] - 128) / 128; // -1..1
@@ -174,5 +214,7 @@ export function useConversation() {
     isProcessing,
     processUserSpeech,
     mouthOpen,
+    ttsLang,
+    setTtsLang,
   };
 }
