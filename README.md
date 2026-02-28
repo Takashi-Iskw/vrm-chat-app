@@ -73,3 +73,11 @@ npm run dev
 ### VRMモデルの用意に関して
 VRMモデルの作成には[こちら](https://vroid.com/studio)のサイトなどが利用できます。
 
+## 使用技術
+- Next.js (App Router)
+- React
+- TypeScript
+- Three.js / React Three Fiber
+- @pixiv/three-vrm (VRM描画)
+- OpenAI API（チャット + 音声）
+- Tailwind CSS
