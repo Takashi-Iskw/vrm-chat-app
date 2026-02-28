@@ -22,7 +22,7 @@ export default function ConversationView({ messages }: Props) {
       }}
     >
       {messages.length === 0 && (
-        <p style={{ opacity: 0.7, fontSize: 14 }}>まだ会話はないよ。</p>
+        <p style={{ opacity: 0.7, fontSize: 14 }}>まだ会話はありません。</p>
       )}
       {messages.map((m) => (
         <div
