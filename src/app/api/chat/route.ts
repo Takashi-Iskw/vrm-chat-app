@@ -16,8 +16,8 @@ type ChatRequestBody = {
   history?: ChatMessage[];
 };
 
-const SYSTEM_PROMPT = process.env.OPENAI_YUI_SYSTEM_PROMPT ?? `
-You friendly talk to user.
+const SYSTEM_PROMPT = process.env.OPENAI_SYSTEM_PROMPT ?? `
+あなたはユーザーとフレンドリーに会話をします。
 `;
 
 export async function POST(req: NextRequest) {
