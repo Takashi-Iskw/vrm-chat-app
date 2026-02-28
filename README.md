@@ -68,7 +68,7 @@ npm run dev
 
 
 また、アプリ画面上部の「System Prompt」を切り替えることで、予め用意されたプロンプトでアプリを簡易に利用することもできます。
-![App View](public/images_for_readme/app_view.png)
+![App View](public/images_for_readme/system_prompt.png)
 
 ### VRMモデルの用意に関して
 VRMモデルの作成には[こちら](https://vroid.com/studio)のサイトなどが利用できます。
