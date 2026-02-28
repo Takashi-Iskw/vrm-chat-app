@@ -14,34 +14,39 @@ export type ConversationMessage = {
 // OpenAI TTS のデフォ設定（英語モードのときに使う）
 const OPENAI_TTS_CONFIG = {
   model: "gpt-4o-mini-tts",
-  voice: "coral",
+  // voice: "coral",
+  voice: "sage",
+  // voice: "shimmer",
   responseFormat: "wav" as const,
   speed: 1.0,
   // 英語喋らせるときにスタイル指定したければここ
-  // instructions:
-  //   "Speak in natural, friendly American English with a clear tone.",
+  instructions:
+    "Speak in natural, friendly, calmly like anime girls.",
 };
 
 export function useConversation() {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [mouthOpen, setMouthOpen] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // 日本語/英語 切り替え
-  const [ttsLang, setTtsLang] = useState<"ja" | "en">("ja");
+  const [ttsLang, setTtsLang] = useState<"ja" | "en">("en");
 
   const processUserSpeech = useCallback(
     async (audioBlob: Blob) => {
       setIsProcessing(true);
+      setError(null);
       try {
         //
         // 1. STT: 音声 → テキスト
         //
         const sttForm = new FormData();
         sttForm.append("file", audioBlob, "input.webm");
+        sttForm.append("lang", ttsLang);
 
         const sttRes = await fetch("/api/stt", {
           method: "POST",
@@ -51,13 +56,18 @@ export function useConversation() {
         if (!sttRes.ok) {
           const errJson = await sttRes.json().catch(() => null);
           console.error("STT failed", sttRes.status, errJson);
-          throw new Error("STT failed");
+          setError(
+            errJson?.error ??
+              "STT failed（音声が短すぎるか、聞き取りできなかった）"
+          );
+          return;
         }
 
         const { text: userText } = (await sttRes.json()) as { text: string };
 
-        if (!userText) {
-          throw new Error("Empty transcription");
+        if (!userText?.trim()) {
+          setError("聞き取れなかった。もう一度話してみて。");
+          return;
         }
 
         setMessages((prev) => [
@@ -137,11 +147,8 @@ export function useConversation() {
 
         const audioArrayBuffer = await ttsRes.arrayBuffer();
 
-        // 出力フォーマットに応じて MIME を雑に決めておく（今は wav ベース）
+        // 出力フォーマット
         const mimeType = "audio/wav"
-          // OPENAI_TTS_CONFIG.responseFormat === "mp3" && ttsLang === "en"
-          //   ? "audio/mpeg"
-          //   : "audio/wav";
 
         const ttsBlob = new Blob([audioArrayBuffer], { type: mimeType });
         const url = URL.createObjectURL(ttsBlob);
@@ -156,6 +163,7 @@ export function useConversation() {
         await playVoiceWithMouth(ttsBlob);
       } catch (e) {
         console.error(e);
+        setError("処理中にエラーが起きた");
       } finally {
         setIsProcessing(false);
       }
@@ -216,5 +224,6 @@ export function useConversation() {
     mouthOpen,
     ttsLang,
     setTtsLang,
+    error,
   };
 }

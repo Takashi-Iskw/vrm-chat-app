@@ -12,7 +12,7 @@ type Props = {
 export default function RecorderButton({ conversation }: Props) {
   const { isRecording, startRecording, stopRecording, status, error } =
     useRecorder();
-  const { processUserSpeech, isProcessing } = conversation;
+  const { processUserSpeech, isProcessing, error: convoError } = conversation;
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleClick = async () => {
@@ -23,6 +23,10 @@ export default function RecorderButton({ conversation }: Props) {
       const blob = await stopRecording();
       if (!blob) {
         setLocalError("録音データが取れなかった");
+        return;
+      }
+      if (blob.size < 1024) {
+        setLocalError("録音が短すぎるか無音だった");
         return;
       }
       await processUserSpeech(blob);
@@ -56,9 +60,9 @@ export default function RecorderButton({ conversation }: Props) {
         {buttonLabel}
       </button>
 
-      {(error || localError) && (
+      {(error || localError || convoError) && (
         <p style={{ color: "#fca5a5", fontSize: 12 }}>
-          {error || localError}
+          {error || localError || convoError}
         </p>
       )}
     </div>

@@ -65,13 +65,15 @@ export default function Page() {
         </button>
       </div>
 
-      <VRMAvatar mouthOpen={conversation.mouthOpen} />
+      <VRMAvatar mouthOpen={conversation.mouthOpen}>
+        <RecorderButton conversation={conversation} />
+      </VRMAvatar>
 
       <ConversationView messages={conversation.messages} />
 
-      <div style={{ marginTop: 24 }}>
+      {/* <div style={{ marginTop: 24 }}>
         <RecorderButton conversation={conversation} />
-      </div>
+      </div> */}
     </main>
   );
 }

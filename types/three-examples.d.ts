@@ -1,7 +1,6 @@
 // types/three-examples.d.ts
 declare module "three/examples/jsm/loaders/GLTFLoader.js" {
   export class GLTFLoader {
-    // ざっくりでOK。必要ならちゃんと定義してもいい
     load(
       url: string,
       onLoad: (gltf: any) => void,

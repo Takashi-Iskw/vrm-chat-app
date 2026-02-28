@@ -16,6 +16,10 @@ type ChatRequestBody = {
   history?: ChatMessage[];
 };
 
+const SYSTEM_PROMPT = process.env.OPENAI_YUI_SYSTEM_PROMPT ?? `
+You friendly talk to user.
+`;
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ChatRequestBody;
@@ -31,16 +35,15 @@ export async function POST(req: NextRequest) {
     const messages: ChatMessage[] = [
       {
         role: "system",
-        content:
-          // "あなたはイシカワと日本語で会話します。クールな毒舌女の子です。",
-          "You are a personal coach of Takashi (user). Your job is to talk to Takashi and help improving his English skill."
+        content: SYSTEM_PROMPT      
       },
       ...history,
       { role: "user", content: userText },
     ];
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+      // model: "gpt-4.1-mini",
+      model: "gpt-5.1",
       messages,
       temperature: 0.7,
     });

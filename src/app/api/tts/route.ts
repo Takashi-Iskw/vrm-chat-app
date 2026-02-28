@@ -186,17 +186,6 @@ async function ttsWithOpenAI(params: OpenAiTtsParams) {
   const audioBuffer = await apiRes.arrayBuffer();
 
   const mimeType = "wav"
-    // responseFormat === "mp3"
-    //   ? "audio/mpeg"
-    //   : responseFormat === "wav"
-    //   ? "audio/wav"
-    //   : responseFormat === "opus"
-    //   ? "audio/ogg"
-    //   : responseFormat === "aac"
-    //   ? "audio/aac"
-    //   : responseFormat === "flac"
-    //   ? "audio/flac"
-    //   : "application/octet-stream";
 
   return new NextResponse(audioBuffer, {
     status: 200,
