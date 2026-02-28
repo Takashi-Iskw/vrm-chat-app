@@ -11,6 +11,13 @@ export type ConversationMessage = {
   text: string;
 };
 
+export type SystemPromptKey =
+  | "friend_male"
+  | "friend_female"
+  | "coach_male"
+  | "coach_female"
+  | "custom";
+
 // OpenAI TTS のデフォ設定
 const OPENAI_TTS_VOICE =
   process.env.NEXT_PUBLIC_OPENAI_TTS_VOICE ?? "sage";
@@ -37,6 +44,8 @@ export function useConversation() {
 
   // 日本語/英語 切り替え（STT 用）
   const [ttsLang, setTtsLang] = useState<"ja" | "en">("en");
+  const [systemPromptKey, setSystemPromptKey] =
+    useState<SystemPromptKey>("friend_male");
 
   const processUserSpeech = useCallback(
     async (audioBlob: Blob) => {
@@ -94,6 +103,7 @@ export function useConversation() {
           body: JSON.stringify({
             userText,
             history: historyForApi,
+            systemPromptKey,
             // もし /api/chat 側で言語切り替えしたければここで lang も送れる
             // lang: ttsLang,
           }),
@@ -163,7 +173,7 @@ export function useConversation() {
         setIsProcessing(false);
       }
     },
-    [messages, ttsLang]
+    [messages, systemPromptKey, ttsLang]
   );
 
   async function playVoiceWithMouth(audioBlob: Blob) {
@@ -219,6 +229,8 @@ export function useConversation() {
     mouthOpen,
     ttsLang,
     setTtsLang,
+    systemPromptKey,
+    setSystemPromptKey,
     error,
   };
 }

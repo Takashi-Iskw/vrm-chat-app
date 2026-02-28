@@ -4,7 +4,7 @@
 import VRMAvatar from "./components/VRMAvatar";
 import RecorderButton from "./components/RecorderButton";
 import ConversationView from "./components/ConversationView";
-import { useConversation } from "./components/useConversation";
+import { useConversation, SystemPromptKey } from "./components/useConversation";
 
 export default function Page() {
   const conversation = useConversation();
@@ -63,6 +63,45 @@ export default function Page() {
         >
           English（OpenAI）
         </button>
+      </div>
+
+      {/* システムプロンプト切り替え */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "8px 12px",
+          borderRadius: 12,
+          background: "rgba(15,23,42,0.8)",
+        }}
+      >
+        <span style={{ fontSize: 12, color: "#cbd5f5" }}>
+          System Prompt
+        </span>
+        <select
+          value={conversation.systemPromptKey}
+          onChange={(e) =>
+            conversation.setSystemPromptKey(
+              e.target.value as SystemPromptKey
+            )
+          }
+          style={{
+            padding: "6px 10px",
+            borderRadius: 8,
+            border: "1px solid rgba(148,163,184,0.4)",
+            background: "#0b1220",
+            color: "#e5e7eb",
+            fontSize: 12,
+            cursor: "pointer",
+          }}
+        >
+          <option value="friend_male">親しい友人(男性)</option>
+          <option value="friend_female">親しい友人(女性)</option>
+          <option value="coach_male">英会話のコーチ (男性)</option>
+          <option value="coach_female">英会話のコーチ (女性)</option>
+          <option value="custom">カスタムプロンプト</option>
+        </select>
       </div>
 
       <VRMAvatar mouthOpen={conversation.mouthOpen}>

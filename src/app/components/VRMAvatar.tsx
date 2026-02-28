@@ -16,8 +16,16 @@ type VRMAvatarProps = {
 
 function ImageBackground() {
   const { scene } = useThree();
-  // const texture = useLoader(THREE.TextureLoader, "/bg/office.png");
-  const texture = useLoader(THREE.TextureLoader, "/bg/bar.png");
+  const bgFile =
+    process.env.NEXT_PUBLIC_BG_IMAGE?.trim() || "bar.png";
+  // Accept "bar.png" and "/bg/bar.png" by normalizing.
+  const normalizedBgFile = bgFile
+    .replace(/^\/?bg\//, "")
+    .replace(/^\/+/, "");
+  const texture = useLoader(
+    THREE.TextureLoader,
+    `/bg/${normalizedBgFile}`
+  );
 
   useEffect(() => {
     // シーン全体の背景にテクスチャを設定
