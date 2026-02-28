@@ -44,9 +44,16 @@ function VRMModel({ mouthOpen = 0 }: { mouthOpen?: number }) {
   const timeRef = useRef(0);
   const restPoseAppliedRef = useRef(false);
 
+  const vrmFile =
+    process.env.NEXT_PUBLIC_VRM_MODEL?.trim() || "/vrm/Nova.vrm";
+  // Accept "Nova.vrm" and "/vrm/Nova.vrm" by normalizing.
+  const normalizedVrmFile = vrmFile
+    .replace(/^\/?vrm\//, "")
+    .replace(/^\/+/, "");
+
   const gltf = useLoader(
     GLTFLoader,
-    "/vrm/Nova.vrm",
+    `/vrm/${normalizedVrmFile}`,
     (loader: GLTFLoader) => {
       loader.register((parser: any) => new VRMLoaderPlugin(parser));
     }
