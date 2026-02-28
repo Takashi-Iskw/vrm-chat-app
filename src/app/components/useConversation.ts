@@ -11,17 +11,19 @@ export type ConversationMessage = {
   text: string;
 };
 
-// OpenAI TTS のデフォ設定（英語モードのときに使う）
+// OpenAI TTS のデフォ設定
+const OPENAI_TTS_VOICE =
+  process.env.NEXT_PUBLIC_OPENAI_TTS_VOICE ?? "sage";
+
 const OPENAI_TTS_CONFIG = {
   model: "gpt-4o-mini-tts",
-  // voice: "coral",
-  voice: "sage",
+  voice: OPENAI_TTS_VOICE,
   // voice: "shimmer",
   responseFormat: "wav" as const,
   speed: 1.0,
   // 英語喋らせるときにスタイル指定したければここ
   instructions:
-    "Speak in natural, friendly, calmly like anime girls.",
+    "Speak in natural.",
 };
 
 export function useConversation() {
@@ -33,7 +35,7 @@ export function useConversation() {
   const [mouthOpen, setMouthOpen] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // 日本語/英語 切り替え
+  // 日本語/英語 切り替え（STT 用）
   const [ttsLang, setTtsLang] = useState<"ja" | "en">("en");
 
   const processUserSpeech = useCallback(
@@ -116,21 +118,14 @@ export function useConversation() {
         //
         const body: any = {
           text: reply,
-          lang: ttsLang, // "ja" → VOICEVOX, "en" → OpenAI
+          model: OPENAI_TTS_CONFIG.model,
+          voice: OPENAI_TTS_CONFIG.voice,
+          responseFormat: OPENAI_TTS_CONFIG.responseFormat,
+          speed: OPENAI_TTS_CONFIG.speed,
         };
 
-        if (ttsLang === "ja") {
-          // VOICEVOX 側のスピーカー ID
-          body.speakerId = 66; // 好きな声に変えろ
-        } else {
-          // OpenAI TTS 側のオプション
-          body.model = OPENAI_TTS_CONFIG.model;
-          body.voice = OPENAI_TTS_CONFIG.voice;
-          body.responseFormat = OPENAI_TTS_CONFIG.responseFormat;
-          body.speed = OPENAI_TTS_CONFIG.speed;
-          if ((OPENAI_TTS_CONFIG as any).instructions) {
-            body.instructions = (OPENAI_TTS_CONFIG as any).instructions;
-          }
+        if ((OPENAI_TTS_CONFIG as any).instructions) {
+          body.instructions = (OPENAI_TTS_CONFIG as any).instructions;
         }
 
         const ttsRes = await fetch("/api/tts", {

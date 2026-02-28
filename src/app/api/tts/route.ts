@@ -1,21 +1,12 @@
 // app/api/tts/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const VOICEVOX_BASE_URL =
-  process.env.VOICEVOX_BASE_URL ?? "http://127.0.0.1:50021";
-
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 export const runtime = "nodejs";
 
 type TtsRequestBody = {
   text: string;
-
-  // "ja" → VOICEVOX, "en" → OpenAI
-  lang?: "ja" | "en";
-
-  // VOICEVOX 用
-  speakerId?: number;
 
   // OpenAI TTS 用
   model?: string; // 例: "gpt-4o-mini-tts", "tts-1"
@@ -30,8 +21,6 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as TtsRequestBody;
     const {
       text,
-      lang = "ja",
-      speakerId = 66,
       model = "gpt-4o-mini-tts",
       voice = "coral",
       responseFormat = "wav",
@@ -44,11 +33,6 @@ export async function POST(req: NextRequest) {
         { error: "text is required" },
         { status: 400 }
       );
-    }
-
-    if (lang === "ja") {
-      // === VOICEVOX ===
-      return await ttsWithVoicevox(text, speakerId);
     }
 
     // === OpenAI TTS ===
@@ -75,62 +59,6 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// =========================
-// VOICEVOX 側
-// =========================
-
-async function ttsWithVoicevox(text: string, speakerId: number) {
-  // 1. audio_query
-  const queryRes = await fetch(
-    `${VOICEVOX_BASE_URL}/audio_query?text=${encodeURIComponent(
-      text
-    )}&speaker=${speakerId}`,
-    {
-      method: "POST",
-    }
-  );
-
-  if (!queryRes.ok) {
-    const msg = await queryRes.text();
-    console.error("VOICEVOX audio_query error:", msg);
-    return NextResponse.json(
-      { error: "VOICEVOX audio_query failed" },
-      { status: 500 }
-    );
-  }
-
-  const queryJson = await queryRes.json();
-
-  // 2. synthesis
-  const synthRes = await fetch(
-    `${VOICEVOX_BASE_URL}/synthesis?speaker=${speakerId}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(queryJson),
-    }
-  );
-
-  if (!synthRes.ok) {
-    const msg = await synthRes.text();
-    console.error("VOICEVOX synthesis error:", msg);
-    return NextResponse.json(
-      { error: "VOICEVOX synthesis failed" },
-      { status: 500 }
-    );
-  }
-
-  const audioBuffer = await synthRes.arrayBuffer();
-
-  return new NextResponse(audioBuffer, {
-    status: 200,
-    headers: {
-      "Content-Type": "audio/wav",
-      "Content-Length": String(audioBuffer.byteLength),
-    },
-  });
 }
 
 // =========================

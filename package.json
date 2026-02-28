@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "voicevox:start": "docker start voicevox-engine || docker run -d --name voicevox-engine -p 50021:50021 voicevox/voicevox_engine:cpu-ubuntu20.04-latest",
-    "dev": "npm run voicevox:start && next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

@@ -23,7 +23,7 @@ export default function Page() {
         padding: "24px",
       }}
     >
-      {/* TTS 言語トグル */}
+      {/* STT 言語トグル */}
       <div
         style={{
           display: "flex",
@@ -46,7 +46,7 @@ export default function Page() {
             color: conversation.ttsLang === "ja" ? "#020617" : "#e5e7eb",
           }}
         >
-          日本語（VOICEVOX）
+          日本語（OpenAI）
         </button>
         <button
           onClick={() => conversation.setTtsLang("en")}
